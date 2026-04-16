@@ -8,8 +8,8 @@ from streamlit_drawable_canvas import st_canvas
 st.set_page_config(page_title="Super Tablero")
 
 # 🎨 Título
-st.title("🟧 Super Tablero")
-st.subheader("Dibuja en él ✏️")
+st.title("Tablero de dibujo")
+st.subheader("Pinta y dale movimiento")
 
 # 🧱 Sidebar
 with st.sidebar:
