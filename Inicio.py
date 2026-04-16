@@ -66,7 +66,7 @@ canvas_result = st_canvas(
 # 🎬 ANIMACIÓN
 # -------------------------------
 st.markdown("---")
-st.subheader("🎬 Animación estilo Wiggly")
+st.subheader("🎬 Animación")
 
 if st.button("Animar estilo Wiggly"):
     if canvas_result.image_data is not None:
