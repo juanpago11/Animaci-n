@@ -66,37 +66,38 @@ canvas_result = st_canvas(
 # 🎬 ANIMACIÓN
 # -------------------------------
 st.markdown("---")
-st.subheader("🎬 Animación")
+st.subheader("🎬 Animación dinámica")
 
-if st.button("Anima y dale movimiento al trazo"):
+if st.button("Animar (modo raro)"):
     if canvas_result.image_data is not None:
 
-        st.write("✨ Animando...")
+        st.write("⚡ Animación activa...")
 
-        image = canvas_result.image_data
-        img = Image.fromarray((image).astype("uint8"))
-
+        img = canvas_result.image_data.astype("uint8")
         placeholder = st.empty()
 
-        for i in range(40):
-            arr = np.array(img)
+        for i in range(60):
+            arr = img.copy()
 
-            # Crear ruido suave (deformación tipo wiggly)
-            noise_x = np.random.randint(-2, 3, arr.shape[:2])
-            noise_y = np.random.randint(-2, 3, arr.shape[:2])
+            # Movimiento exagerado por bloques
+            shift_x = np.random.randint(-15, 15)
+            shift_y = np.random.randint(-15, 15)
 
-            new_img = np.zeros_like(arr)
+            # Movimiento rápido (tipo glitch)
+            arr = np.roll(arr, shift_x, axis=1)
+            arr = np.roll(arr, shift_y, axis=0)
 
-            for y in range(arr.shape[0]):
-                for x in range(arr.shape[1]):
-                    nx = np.clip(x + noise_x[y, x], 0, arr.shape[1]-1)
-                    ny = np.clip(y + noise_y[y, x], 0, arr.shape[0]-1)
-                    new_img[y, x] = arr[ny, nx]
+            # Distorsión extra (efecto raro)
+            if i % 2 == 0:
+                arr = np.roll(arr, np.random.randint(-5, 5), axis=0)
 
-            frame = Image.fromarray(new_img)
+            # Invertir colores aleatoriamente (glitch)
+            if np.random.rand() > 0.8:
+                arr = 255 - arr
 
-            placeholder.image(frame, use_container_width=True)
-            time.sleep(0.05)
+            placeholder.image(arr, use_container_width=True)
+
+            time.sleep(0.03)  # 🔥 mucho más rápido
 
     else:
         st.warning("⚠️ Primero dibuja algo.")
