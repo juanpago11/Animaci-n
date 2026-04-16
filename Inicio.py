@@ -65,45 +65,68 @@ canvas_result = st_canvas(
 # -------------------------------
 # 🎬 ANIMACIÓN
 # -------------------------------
-st.markdown("---")
-st.subheader("🎬 Animación tipo trazo vivo")
+import streamlit.components.v1 as components
 
-if st.button("Animar trazo"):
-    if canvas_result.json_data is not None:
+components.html("""
+<!DOCTYPE html>
+<html>
+<body style="margin:0; overflow:hidden; background:white;">
+<canvas id="canvas"></canvas>
 
-        import copy
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 
-        data = canvas_result.json_data
-        placeholder = st.empty()
+canvas.width = 600;
+canvas.height = 400;
 
-        for _ in range(40):
-            new_data = copy.deepcopy(data)
+let drawing = false;
+let paths = [];
 
-            # Modificar puntos de cada trazo
-            for obj in new_data["objects"]:
-                if obj["type"] == "path":
-                    for point in obj["path"]:
-                        if len(point) >= 3:
-                            # punto x, y (índices 1 y 2)
-                            point[1] += np.random.uniform(-2, 2)
-                            point[2] += np.random.uniform(-2, 2)
+// Dibujar
+canvas.addEventListener("mousedown", () => drawing = true);
+canvas.addEventListener("mouseup", () => drawing = false);
 
-            # Redibujar canvas con nuevos puntos
-            placeholder.write("")  # limpiar
+canvas.addEventListener("mousemove", (e) => {
+    if (!drawing) return;
 
-            st_canvas(
-                fill_color="rgba(255, 165, 0, 0.3)",
-                stroke_width=stroke_width,
-                stroke_color=stroke_color,
-                background_color=bg_color,
-                height=canvas_height,
-                width=canvas_width,
-                drawing_mode="freedraw",
-                initial_drawing=new_data,
-                key=f"anim_{_}"
-            )
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
-            time.sleep(0.05)
+    paths.push({x, y});
+});
 
-    else:
-        st.warning("⚠️ Primero dibuja algo.")
+// Animación WIGGLY REAL
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.beginPath();
+
+    for (let i = 0; i < paths.length; i++) {
+        let p = paths[i];
+
+        // 🔥 Aquí está el efecto Wiggly
+        let wiggleX = p.x + (Math.random() - 0.5) * 4;
+        let wiggleY = p.y + (Math.random() - 0.5) * 4;
+
+        if (i === 0) {
+            ctx.moveTo(wiggleX, wiggleY);
+        } else {
+            ctx.lineTo(wiggleX, wiggleY);
+        }
+    }
+
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>
+""", height=420)
