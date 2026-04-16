@@ -1,16 +1,32 @@
+import streamlit as st
+import streamlit.components.v1 as components
+
+st.set_page_config(page_title="Super Tablero")
+
+st.title("Super Tablero")
+
+# SIDEBAR
+with st.sidebar:
+    st.subheader("Propiedades")
+
+    canvas_width = st.slider("Ancho", 300, 900, 600)
+    canvas_height = st.slider("Alto", 200, 600, 300)
+
+    stroke_width = st.slider("Tamaño del trazo", 1, 20, 3)
+
+    stroke_color = st.color_picker("Color del trazo", "#000000")
+    bg_color = st.color_picker("Color de fondo", "#FFFFFF")
+
+    herramienta = st.selectbox("Herramienta", ["Dibujar", "Borrador"])
+
+erase_mode = "true" if herramienta == "Borrador" else "false"
+
+
+# 👇 AQUÍ VA EL HTML
 components.html(f"""
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="UTF-8">
-<style>
-body {{ margin: 0; font-family: sans-serif; background: {bg_color}; }}
-canvas {{ border: 1px solid #ccc; display: block; margin: 10px auto; }}
-h3 {{ text-align: center; margin: 5px; }}
-</style>
-</head>
-
-<body>
+<body style="margin:0; background:{bg_color}; font-family:sans-serif;">
 
 <h3>Dibujo</h3>
 <canvas id="drawCanvas"></canvas>
@@ -38,15 +54,11 @@ let eraseMode = {erase_mode};
 
 function getMousePos(canvas, evt) {{
     const rect = canvas.getBoundingClientRect();
-    return {{
-        x: evt.clientX - rect.left,
-        y: evt.clientY - rect.top
-    }};
+    return {{ x: evt.clientX - rect.left, y: evt.clientY - rect.top }};
 }}
 
 drawCanvas.addEventListener("mousedown", (e) => {{
     drawing = true;
-
     if (!eraseMode) {{
         currentPath = [];
         paths.push(currentPath);
