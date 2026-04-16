@@ -66,9 +66,9 @@ canvas_result = st_canvas(
 # 🎬 ANIMACIÓN
 # -------------------------------
 st.markdown("---")
-st.subheader("🎬 Animación del dibujo")
+st.subheader("🎬 Animación estilo Wiggly")
 
-if st.button("Animar dibujo"):
+if st.button("Animar estilo Wiggly"):
     if canvas_result.image_data is not None:
 
         st.write("✨ Animando...")
@@ -78,17 +78,25 @@ if st.button("Animar dibujo"):
 
         placeholder = st.empty()
 
-        # Loop animación
-        for i in range(30):
-            dx = np.random.randint(-4, 4)
-            dy = np.random.randint(-4, 4)
+        for i in range(40):
+            arr = np.array(img)
 
-            frame = Image.new("RGBA", img.size, (255, 255, 255, 0))
-            frame.paste(img, (dx, dy))
+            # Crear ruido suave (deformación tipo wiggly)
+            noise_x = np.random.randint(-2, 3, arr.shape[:2])
+            noise_y = np.random.randint(-2, 3, arr.shape[:2])
+
+            new_img = np.zeros_like(arr)
+
+            for y in range(arr.shape[0]):
+                for x in range(arr.shape[1]):
+                    nx = np.clip(x + noise_x[y, x], 0, arr.shape[1]-1)
+                    ny = np.clip(y + noise_y[y, x], 0, arr.shape[0]-1)
+                    new_img[y, x] = arr[ny, nx]
+
+            frame = Image.fromarray(new_img)
 
             placeholder.image(frame, use_container_width=True)
-
-            time.sleep(0.07)
+            time.sleep(0.05)
 
     else:
         st.warning("⚠️ Primero dibuja algo.")
