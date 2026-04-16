@@ -1,31 +1,3 @@
-import streamlit as st
-import streamlit.components.v1 as components
-
-st.set_page_config(page_title="Super Tablero")
-
-st.title("Super Tablero")
-
-# SIDEBAR
-with st.sidebar:
-    st.subheader("Propiedades")
-
-    canvas_width = st.slider("Ancho", 300, 900, 600)
-    canvas_height = st.slider("Alto", 200, 600, 300)
-
-    stroke_width = st.slider("Tamaño del trazo", 1, 20, 3)
-
-    stroke_color = st.color_picker("Color del trazo", "#000000")
-    bg_color = st.color_picker("Color de fondo", "#FFFFFF")
-
-    herramienta = st.selectbox(
-        "Herramienta",
-        ["Dibujar", "Borrador"]
-    )
-
-# convertir modo
-erase_mode = "true" if herramienta == "Borrador" else "false"
-
-# HTML dinámico
 components.html(f"""
 <!DOCTYPE html>
 <html>
@@ -97,7 +69,6 @@ drawCanvas.addEventListener("mousemove", (e) => {{
     currentPath.push(pos);
 }});
 
-// BORRADOR
 function erase(e) {{
     const pos = getMousePos(drawCanvas, e);
 
@@ -110,7 +81,6 @@ function erase(e) {{
     }});
 }}
 
-// DIBUJO ESTÁTICO
 function drawStatic() {{
     drawCtx.fillStyle = "{bg_color}";
     drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
@@ -133,7 +103,6 @@ function drawStatic() {{
     }}
 }}
 
-// ANIMACIÓN WIGGLY
 function animate() {{
     animCtx.fillStyle = "{bg_color}";
     animCtx.fillRect(0, 0, animCanvas.width, animCanvas.height);
@@ -168,80 +137,4 @@ animate();
 
 </body>
 </html>
-""", height=canvas_height * 2 + 120)        return;
-    }
-
-    const pos = getMousePos(drawCanvas, e);
-    currentPath.push(pos);
-});
-
-// borrador: elimina trazos cercanos
-function erase(e) {
-    const pos = getMousePos(drawCanvas, e);
-
-    paths = paths.filter(path => {
-        return !path.some(p => {
-            const dx = p.x - pos.x;
-            const dy = p.y - pos.y;
-            return Math.sqrt(dx*dx + dy*dy) < 10;
-        });
-    });
-}
-
-// dibujo normal (arriba)
-function drawStatic() {
-    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-
-    drawCtx.lineWidth = 3;
-    drawCtx.strokeStyle = "black";
-
-    for (let path of paths) {
-        if (path.length < 2) continue;
-
-        drawCtx.beginPath();
-
-        for (let i = 0; i < path.length; i++) {
-            let p = path[i];
-            if (i === 0) drawCtx.moveTo(p.x, p.y);
-            else drawCtx.lineTo(p.x, p.y);
-        }
-
-        drawCtx.stroke();
-    }
-}
-
-// animación (wiggly real)
-function animate() {
-    animCtx.clearRect(0, 0, animCanvas.width, animCanvas.height);
-
-    animCtx.lineWidth = 3;
-    animCtx.strokeStyle = "black";
-
-    for (let path of paths) {
-        if (path.length < 2) continue;
-
-        animCtx.beginPath();
-
-        for (let i = 0; i < path.length; i++) {
-            let p = path[i];
-
-            let x = p.x + (Math.random() - 0.5) * 4;
-            let y = p.y + (Math.random() - 0.5) * 4;
-
-            if (i === 0) animCtx.moveTo(x, y);
-            else animCtx.lineTo(x, y);
-        }
-
-        animCtx.stroke();
-    }
-
-    drawStatic();
-    requestAnimationFrame(animate);
-}
-
-animate();
-</script>
-
-</body>
-</html>
-""", height=650)
+""", height=canvas_height * 2 + 120)
