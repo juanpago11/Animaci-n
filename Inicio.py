@@ -21,15 +21,34 @@ with st.sidebar:
 
 erase_mode = "true" if herramienta == "Borrador" else "false"
 
+# BOTÓN LIMPIAR
+if st.button("Limpiar dibujo"):
+    components.html("""
+    <script>
+    localStorage.removeItem("drawing_paths");
+    location.reload();
+    </script>
+    """, height=0)
 
-# 👇 AQUÍ VA EL HTML
+# HTML + JS
 components.html(f"""
 <!DOCTYPE html>
 <html>
-<body style="margin:0; background:{bg_color}; font-family:sans-serif;">
+<head>
+<meta charset="UTF-8">
+<style>
+body {{ margin: 0; font-family: sans-serif; background: {bg_color}; }}
+canvas {{ border: 1px solid #ccc; display: block; margin: 10px auto; }}
+h3 {{ text-align: center; margin: 5px; }}
+</style>
+</head>
+
+<body>
 
 <h3>Dibujo</h3>
 <canvas id="drawCanvas"></canvas>
+
+<div style="height:40px; border-bottom:1px solid #ccc;"></div>
 
 <h3>Dibujo con movimiento</h3>
 <canvas id="animCanvas"></canvas>
@@ -52,13 +71,24 @@ let paths = [];
 let currentPath = [];
 let eraseMode = {erase_mode};
 
-function getMousePos(canvas, evt) {{
-    const rect = canvas.getBoundingClientRect();
-    return {{ x: evt.clientX - rect.left, y: evt.clientY - rect.top }};
+// CARGAR DESDE LOCALSTORAGE
+const saved = localStorage.getItem("drawing_paths");
+if (saved) {{
+    paths = JSON.parse(saved);
 }}
 
+function getMousePos(canvas, evt) {{
+    const rect = canvas.getBoundingClientRect();
+    return {{
+        x: evt.clientX - rect.left,
+        y: evt.clientY - rect.top
+    }};
+}}
+
+// INICIAR TRAZO
 drawCanvas.addEventListener("mousedown", (e) => {{
     drawing = true;
+
     if (!eraseMode) {{
         currentPath = [];
         paths.push(currentPath);
@@ -67,8 +97,10 @@ drawCanvas.addEventListener("mousedown", (e) => {{
     }}
 }});
 
+// TERMINAR TRAZO
 drawCanvas.addEventListener("mouseup", () => drawing = false);
 
+// DIBUJAR
 drawCanvas.addEventListener("mousemove", (e) => {{
     if (!drawing) return;
 
@@ -79,8 +111,12 @@ drawCanvas.addEventListener("mousemove", (e) => {{
 
     const pos = getMousePos(drawCanvas, e);
     currentPath.push(pos);
+
+    // GUARDAR
+    localStorage.setItem("drawing_paths", JSON.stringify(paths));
 }});
 
+// BORRADOR
 function erase(e) {{
     const pos = getMousePos(drawCanvas, e);
 
@@ -91,8 +127,12 @@ function erase(e) {{
             return Math.sqrt(dx*dx + dy*dy) < {stroke_width * 2};
         }});
     }});
+
+    // GUARDAR
+    localStorage.setItem("drawing_paths", JSON.stringify(paths));
 }}
 
+// DIBUJO ESTÁTICO
 function drawStatic() {{
     drawCtx.fillStyle = "{bg_color}";
     drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
@@ -115,6 +155,7 @@ function drawStatic() {{
     }}
 }}
 
+// ANIMACIÓN WIGGLY
 function animate() {{
     animCtx.fillStyle = "{bg_color}";
     animCtx.fillRect(0, 0, animCanvas.width, animCanvas.height);
@@ -149,4 +190,4 @@ animate();
 
 </body>
 </html>
-""", height=canvas_height * 2 + 120)
+""", height=canvas_height * 2 + 140)
