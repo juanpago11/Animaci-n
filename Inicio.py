@@ -66,38 +66,44 @@ canvas_result = st_canvas(
 # 🎬 ANIMACIÓN
 # -------------------------------
 st.markdown("---")
-st.subheader("🎬 Animación dinámica")
+st.subheader("🎬 Animación tipo trazo vivo")
 
-if st.button("Animar (modo raro)"):
-    if canvas_result.image_data is not None:
+if st.button("Animar trazo"):
+    if canvas_result.json_data is not None:
 
-        st.write("⚡ Animación activa...")
+        import copy
 
-        img = canvas_result.image_data.astype("uint8")
+        data = canvas_result.json_data
         placeholder = st.empty()
 
-        for i in range(60):
-            arr = img.copy()
+        for _ in range(40):
+            new_data = copy.deepcopy(data)
 
-            # Movimiento exagerado por bloques
-            shift_x = np.random.randint(-15, 15)
-            shift_y = np.random.randint(-15, 15)
+            # Modificar puntos de cada trazo
+            for obj in new_data["objects"]:
+                if obj["type"] == "path":
+                    for point in obj["path"]:
+                        if len(point) >= 3:
+                            # punto x, y (índices 1 y 2)
+                            point[1] += np.random.uniform(-2, 2)
+                            point[2] += np.random.uniform(-2, 2)
 
-            # Movimiento rápido (tipo glitch)
-            arr = np.roll(arr, shift_x, axis=1)
-            arr = np.roll(arr, shift_y, axis=0)
+            # Redibujar canvas con nuevos puntos
+            placeholder.write("")  # limpiar
 
-            # Distorsión extra (efecto raro)
-            if i % 2 == 0:
-                arr = np.roll(arr, np.random.randint(-5, 5), axis=0)
+            st_canvas(
+                fill_color="rgba(255, 165, 0, 0.3)",
+                stroke_width=stroke_width,
+                stroke_color=stroke_color,
+                background_color=bg_color,
+                height=canvas_height,
+                width=canvas_width,
+                drawing_mode="freedraw",
+                initial_drawing=new_data,
+                key=f"anim_{_}"
+            )
 
-            # Invertir colores aleatoriamente (glitch)
-            if np.random.rand() > 0.8:
-                arr = 255 - arr
-
-            placeholder.image(arr, use_container_width=True)
-
-            time.sleep(0.03)  # 🔥 mucho más rápido
+            time.sleep(0.05)
 
     else:
         st.warning("⚠️ Primero dibuja algo.")
