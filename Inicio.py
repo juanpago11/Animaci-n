@@ -169,7 +169,6 @@ function animate() {
     for (let i = 0; i < paths.length; i++) {
         let p = paths[i];
 
-        // 🔥 Aquí está el efecto Wiggly
         let wiggleX = p.x + (Math.random() - 0.5) * 4;
         let wiggleY = p.y + (Math.random() - 0.5) * 4;
 
