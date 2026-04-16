@@ -3,12 +3,21 @@ import streamlit.components.v1 as components
 components.html("""
 <!DOCTYPE html>
 <html>
-<body style="margin:0; background:white; font-family:sans-serif;">
+<head>
+<meta charset="UTF-8">
+<style>
+body { margin: 0; font-family: sans-serif; }
+canvas { border: 1px solid #ccc; display: block; margin: 10px auto; }
+h3 { text-align: center; margin: 5px; }
+</style>
+</head>
 
-<h3 style="text-align:center;">🎨 Dibujo</h3>
+<body>
+
+<h3>Dibujo</h3>
 <canvas id="drawCanvas"></canvas>
 
-<h3 style="text-align:center; margin-top:20px;">🎬 Dibujo con movimiento</h3>
+<h3>Dibujo con movimiento</h3>
 <canvas id="animCanvas"></canvas>
 
 <script>
@@ -20,7 +29,6 @@ const animCtx = animCanvas.getContext("2d");
 
 drawCanvas.width = 600;
 drawCanvas.height = 300;
-
 animCanvas.width = 600;
 animCanvas.height = 300;
 
@@ -29,15 +37,23 @@ let paths = [];
 let currentPath = [];
 let eraseMode = false;
 
-// 🖱️ Detectar tecla E para borrar
-window.addEventListener("keydown", (e) => {
+// modo borrador con tecla "e"
+document.addEventListener("keydown", (e) => {
     if (e.key === "e") eraseMode = true;
 });
-window.addEventListener("keyup", (e) => {
+document.addEventListener("keyup", (e) => {
     if (e.key === "e") eraseMode = false;
 });
 
-// Iniciar trazo
+function getMousePos(canvas, evt) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: evt.clientX - rect.left,
+        y: evt.clientY - rect.top
+    };
+}
+
+// iniciar trazo
 drawCanvas.addEventListener("mousedown", (e) => {
     drawing = true;
 
@@ -45,45 +61,42 @@ drawCanvas.addEventListener("mousedown", (e) => {
         currentPath = [];
         paths.push(currentPath);
     } else {
-        eraseAt(e);
+        erase(e);
     }
 });
 
-// Terminar trazo
-drawCanvas.addEventListener("mouseup", () => drawing = false);
+// terminar trazo
+drawCanvas.addEventListener("mouseup", () => {
+    drawing = false;
+});
 
-// Dibujar
+// mover mouse
 drawCanvas.addEventListener("mousemove", (e) => {
     if (!drawing) return;
 
     if (eraseMode) {
-        eraseAt(e);
+        erase(e);
         return;
     }
 
-    const rect = drawCanvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    currentPath.push({x, y});
+    const pos = getMousePos(drawCanvas, e);
+    currentPath.push(pos);
 });
 
-// 🧽 BORRADOR (elimina trazos cercanos)
-function eraseAt(e) {
-    const rect = drawCanvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+// borrador: elimina trazos cercanos
+function erase(e) {
+    const pos = getMousePos(drawCanvas, e);
 
     paths = paths.filter(path => {
         return !path.some(p => {
-            const dx = p.x - x;
-            const dy = p.y - y;
-            return Math.sqrt(dx*dx + dy*dy) < 15;
+            const dx = p.x - pos.x;
+            const dy = p.y - pos.y;
+            return Math.sqrt(dx*dx + dy*dy) < 10;
         });
     });
 }
 
-// 🎨 Dibujar original (arriba)
+// dibujo normal (arriba)
 function drawStatic() {
     drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
 
@@ -105,7 +118,7 @@ function drawStatic() {
     }
 }
 
-// 🎬 Animación Wiggly (abajo)
+// animación (wiggly real)
 function animate() {
     animCtx.clearRect(0, 0, animCanvas.width, animCanvas.height);
 
@@ -120,17 +133,17 @@ function animate() {
         for (let i = 0; i < path.length; i++) {
             let p = path[i];
 
-            let wiggleX = p.x + (Math.random() - 0.5) * 4;
-            let wiggleY = p.y + (Math.random() - 0.5) * 4;
+            let x = p.x + (Math.random() - 0.5) * 4;
+            let y = p.y + (Math.random() - 0.5) * 4;
 
-            if (i === 0) animCtx.moveTo(wiggleX, wiggleY);
-            else animCtx.lineTo(wiggleX, wiggleY);
+            if (i === 0) animCtx.moveTo(x, y);
+            else animCtx.lineTo(x, y);
         }
 
         animCtx.stroke();
     }
 
-    drawStatic(); // mantener dibujo original arriba
+    drawStatic();
     requestAnimationFrame(animate);
 }
 
@@ -140,55 +153,3 @@ animate();
 </body>
 </html>
 """, height=650)
-canvas.width = 600;
-canvas.height = 400;
-
-let drawing = false;
-let paths = [];
-
-// Dibujar
-canvas.addEventListener("mousedown", () => drawing = true);
-canvas.addEventListener("mouseup", () => drawing = false);
-
-canvas.addEventListener("mousemove", (e) => {
-    if (!drawing) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    paths.push({x, y});
-});
-
-// Animación WIGGLY REAL
-function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    ctx.beginPath();
-
-    for (let i = 0; i < paths.length; i++) {
-        let p = paths[i];
-
-        let wiggleX = p.x + (Math.random() - 0.5) * 4;
-        let wiggleY = p.y + (Math.random() - 0.5) * 4;
-
-        if (i === 0) {
-            ctx.moveTo(wiggleX, wiggleY);
-        } else {
-            ctx.lineTo(wiggleX, wiggleY);
-        }
-    }
-
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    requestAnimationFrame(animate);
-}
-
-animate();
-</script>
-
-</body>
-</html>
-""", height=420)
